@@ -1,8 +1,9 @@
 import {
   Approval as ApprovalEvent,
-  Transfer as TransferEvent
+  Transfer as TransferEvent,
+  NU as TokenContract
 } from "../generated/NU/NU"
-import { Approval, Transfer } from "../generated/schema"
+import { Approval, Transfer, User } from "../generated/schema"
 
 export function handleApproval(event: ApprovalEvent): void {
   let entity = new Approval(
@@ -22,4 +23,21 @@ export function handleTransfer(event: TransferEvent): void {
   entity.to = event.params.to
   entity.value = event.params.value
   entity.save()
+
+  let fromUser = User.load(event.params.from.toHexString());
+  if (!fromUser) {
+    fromUser = new User(event.params.from.toHexString());
+  }
+
+  let toUser = User.load(event.params.to.toHexString());
+  if (!toUser) {
+    toUser = new User(event.params.to.toHexString());
+  }
+
+  let nuContract = TokenContract.bind(event.address)
+  fromUser.balance = nuContract.balanceOf(event.params.from)
+  toUser.balance = nuContract.balanceOf(event.params.to)
+
+  fromUser.save();
+  toUser.save();
 }

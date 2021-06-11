@@ -11,3 +11,8 @@ type Transfer @entity {
   to: Bytes! # address
   value: BigInt! # uint256
 }
+
+type User @entity {
+  id: ID!
+  balance: BigInt! #uint256
+}
